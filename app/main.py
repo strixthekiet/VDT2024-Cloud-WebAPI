@@ -13,8 +13,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 mongo_url = os.getenv("MONGO_URL")
-# mongo_url = "35.215.153.51"
 client = motor.motor_asyncio.AsyncIOMotorClient(f"mongodb://{mongo_url}:27017/")
+print(f"Connected to MongoDB at {mongo_url}")
 student_collection = client.vdt24.get_collection("students")
 
 
