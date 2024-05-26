@@ -1,8 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-import json
 import motor.motor_asyncio
-from bson import ObjectId
 app = FastAPI(title="Nguyen Don The Kiet's Submission for VDT2024 Cloud WebAPI", version="0.1", description="This is a simple API for managing students' information")
 import os
 app.add_middleware(
@@ -12,9 +10,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-mongo_url = os.getenv("MONGO_URL")
-# mongo_url = "35.215.153.51"
+mongo_url = os.getenv('MONGO_URL')
+print(f"Connected to MongoDB at {mongo_url}")
 client = motor.motor_asyncio.AsyncIOMotorClient(f"mongodb://{mongo_url}:27017/")
+
 student_collection = client.vdt24.get_collection("students")
 
 
@@ -30,7 +29,7 @@ async def get_students():
     for student in students:
         response.append(
             {
-                "id" : str(student["_id"]), # Convert ObjectId to string to avoid "Object of type ObjectId is not JSON serializable
+                "id" : student["id"],
                 "name" : student["Name"],
                 "gender" : student["Gender"],
                 "university" : student["University"],
@@ -40,12 +39,12 @@ async def get_students():
 
 
 @app.get("/students/{student_id}")
-async def get_student(student_id: str):
-    student = await student_collection.find_one({"_id": ObjectId(student_id)})
+async def get_student(student_id: int):
+    student = await student_collection.find_one({"id": student_id})
 
     if student:
         return {
-            "id" : str(student["_id"]),
+            "id" : student["id"],
             "name" : student["Name"],
             "gender" : student["Gender"],
             "university" : student["University"],
@@ -59,6 +58,11 @@ async def get_student(student_id: str):
 
 @app.post("/students")
 async def create_student( req_json: dict):
+    # find the latest student id
+    student = await student_collection.find_one(sort=[("id", -1)])
+    new_id = 1
+    if student:
+        new_id = student["id"] + 1
     student = {
         "Name": req_json["name"],
         "University": req_json["university"],
@@ -66,24 +70,35 @@ async def create_student( req_json: dict):
         "PhoneNb": req_json["phoneNb"],
         "YearOB": req_json["yearOB"],
         "Country": req_json["country"],
-        "Gender" : req_json["gender"]}
+        "Gender" : req_json["gender"],
+        "id": new_id
+    }
+    print(student)
     result = await student_collection.insert_one(student)
-    return {"message": "Student has been created", "student_id": str(result.inserted_id)}
+    response = {"message": "Student has been created", "student_id": new_id}
+    return response
 
 
 @app.delete("/students/{student_id}")
-async def delete_student(student_id: str):
-    result = await student_collection.delete_one({"_id": ObjectId(student_id)})
+async def delete_student(student_id: int):
+    student = await student_collection.find_one({"id": student_id})
+    if student is None:
+        return {"message": "Student not found"}
+
+    result = await student_collection.delete_one({"id": student_id})
     if result.deleted_count == 1:
         return {"message": "Student has been deleted"}
     return {"message": "Student not found"}
 
 
 @app.put("/students/{student_id}")
-async def update_student(student_id: str, req_json: dict):
-    await student_collection.update_one(
-        {"_id": ObjectId(student_id)},
-        {"$set": {
+async def update_student(student_id: int, req_json: dict):
+    student = await student_collection.find_one({"id": student_id})
+    if student is None:
+        return {"message": "Student not found"}
+
+    await student_collection.update_one({"id": student_id}, {"$set":
+        {
             "Name": req_json["name"],
             "University": req_json["university"],
             "Email": req_json["email"],
@@ -91,5 +106,5 @@ async def update_student(student_id: str, req_json: dict):
             "YearOB": req_json["yearOB"],
             "Country": req_json["country"],
             "Gender" : req_json["gender"]
-        }})
+            }})
     return {"message": "Student has been updated"}

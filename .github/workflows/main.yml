@@ -3,7 +3,7 @@ name: CICD
 on:
   pull_request:
     branches: [ main ]
-
+  push:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
     
     - name: start uvicorn and run tests
       run: |
-        export MONGO_URL=34.96.190.241
+        export MONGO_URL=${{ secrets.MONGO_IP }}
         uvicorn app.main:app --host 0.0.0.0 --port 8000 & sleep 5
         python app/test_main.py
         
