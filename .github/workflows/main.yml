@@ -23,6 +23,7 @@ jobs:
     
     - name: start uvicorn and run tests
       run: |
+        export MONGO_URL=34.96.190.241
         uvicorn app.main:app --host 0.0.0.0 --port 8000 & sleep 5
         python app/test_main.py
         
