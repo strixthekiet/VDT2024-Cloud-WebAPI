@@ -73,10 +73,9 @@ async def create_student( req_json: dict):
         "Gender" : req_json["gender"],
         "id": new_id
     }
+    print(student)
     result = await student_collection.insert_one(student)
-    response = student
-    response["id"] = new_id
-    response["message"] = "Student has been created"
+    response = {"message": "Student has been created", "student_id": new_id}
     return response
 
 

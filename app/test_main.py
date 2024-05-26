@@ -50,7 +50,7 @@ def test_api():
     # print(response.json())
     assert response.status_code == 200
     print("test 8: pass")
-    assert "message" in response.json()
+    assert "student_id" in response.json()
     print("test 9: pass")
     assert response.json()["message"] == "Student has been created"
     print("test 10: pass")
