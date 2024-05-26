@@ -3,7 +3,7 @@ name: CICD
 on:
   pull_request:
     branches: [ main ]
-
+  push:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
