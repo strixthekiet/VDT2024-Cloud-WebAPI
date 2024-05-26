@@ -17,12 +17,30 @@ client = motor.motor_asyncio.AsyncIOMotorClient(f"mongodb://{mongo_url}:27017/")
 student_collection = client.vdt24.get_collection("students")
 
 
-@app.get("/")
+@app.get("/", responses={200: {"description": "Welcome to Strix's Submission for VDT2024 Cloud WebAPI"}})
 def Welcome():
-    res = "Welcome to Strix's Submission for VDT2024 Cloud WebAPI"
-    return res
+    return "Welcome to Strix's Submission for VDT2024 Cloud WebAPI"
 
-@app.get("/students")
+@app.get("/students", responses=
+         {
+             200:  {
+                 "description": "List of students",
+                 "content": {
+                     "application/json": {
+                         "example": [
+                             {
+                                 "id": 1,
+                                 "name": "Nguyen Don The Kiet",
+                                 "gender" : "male",
+                                "university": "Vinuniversity",
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        )
+
 async def get_students():
     students = await student_collection.find().to_list(100)
     response = []
@@ -38,7 +56,22 @@ async def get_students():
     return response
 
 
-@app.get("/students/{student_id}")
+@app.get("/students/{student_id}", responses=
+         {
+             200: {
+                 "description": "Student information",
+                 "content": {
+                     "application/json": {
+                         "example": {
+                             "id": 1,
+                             "name": "Nguyen Don The Kiet",
+                             "gender" : "Nam",
+                                "university": "Vinuniversity",
+                                "yearOB": 2000,
+                                "email": "email",
+                                "phoneNb": "123456789",
+                                "country": "Vietnam"
+                        } }}}})
 async def get_student(student_id: int):
     student = await student_collection.find_one({"id": student_id})
 
@@ -56,7 +89,7 @@ async def get_student(student_id: int):
     return {"message": "Student not found"}
 
 
-@app.post("/students")
+@app.post("/students", description="Create a new student", responses= {200: {"description": "Student has been created", "content": {"application/json": {"example": {"message": "Student has been created", "student_id": 1}}} }})
 async def create_student( req_json: dict):
     # find the latest student id
     student = await student_collection.find_one(sort=[("id", -1)])
@@ -79,7 +112,7 @@ async def create_student( req_json: dict):
     return response
 
 
-@app.delete("/students/{student_id}")
+@app.delete("/students/{student_id}", responses={200: {"description": "Student has been deleted"}, 200: {"description": "Student not found"}})
 async def delete_student(student_id: int):
     student = await student_collection.find_one({"id": student_id})
     if student is None:
@@ -91,7 +124,7 @@ async def delete_student(student_id: int):
     return {"message": "Student not found"}
 
 
-@app.put("/students/{student_id}")
+@app.put("/students/{student_id}", responses={200: {"description": "Student has been updated"}, 200: {"description": "Student not found"}})
 async def update_student(student_id: int, req_json: dict):
     student = await student_collection.find_one({"id": student_id})
     if student is None:
