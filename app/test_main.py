@@ -16,7 +16,7 @@ def test_api():
     assert response.status_code == 200
     print("test 3: pass")
     assert len(response.json()) != 0
-    print("test 4: pass")
+    print("test 4: pass with length of response: ", len(response.json()) , " students")
 
     # test get student by id
     data = {
@@ -28,8 +28,7 @@ def test_api():
         "phoneNb": "0867288725",
         "country": "Việt Nam"
         }
-    response = get(url + "students/6652cf4d945c1eaba2f8539c")
-
+    response = get(url + "students/21")
     assert response.status_code == 200
     print("test 5: pass")
     assert response.json()["name"] == data["name"]
