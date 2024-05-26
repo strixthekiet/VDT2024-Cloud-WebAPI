@@ -1,8 +1,6 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-import json
 import motor.motor_asyncio
-from bson import ObjectId
 app = FastAPI(title="Nguyen Don The Kiet's Submission for VDT2024 Cloud WebAPI", version="0.1", description="This is a simple API for managing students' information")
 import os
 app.add_middleware(
@@ -31,7 +29,7 @@ async def get_students():
     for student in students:
         response.append(
             {
-                "id" : student["id"], # Convert ObjectId to string to avoid "Object of type ObjectId is not JSON serializable
+                "id" : student["id"],
                 "name" : student["Name"],
                 "gender" : student["Gender"],
                 "university" : student["University"],
@@ -76,7 +74,10 @@ async def create_student( req_json: dict):
         "id": new_id
     }
     result = await student_collection.insert_one(student)
-    return {"message": "Student has been created"}
+    response = student
+    response["id"] = new_id
+    response["message"] = "Student has been created"
+    return response
 
 
 @app.delete("/students/{student_id}")
@@ -108,16 +109,3 @@ async def update_student(student_id: int, req_json: dict):
             "Gender" : req_json["gender"]
             }})
     return {"message": "Student has been updated"}
-
-    # await student_collection.update_one(
-    #     {"_id": ObjectId(student_id)},
-    #     {"$set": {
-    #         "Name": req_json["name"],
-    #         "University": req_json["university"],
-    #         "Email": req_json["email"],
-    #         "PhoneNb": req_json["phoneNb"],
-    #         "YearOB": req_json["yearOB"],
-    #         "Country": req_json["country"],
-    #         "Gender" : req_json["gender"]
-    #     }})
-    # return {"message": "Student has been updated"}
