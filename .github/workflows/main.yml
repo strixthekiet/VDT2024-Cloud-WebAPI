@@ -29,10 +29,9 @@ jobs:
         
     - name: Build Docker image
       run: |
-        docker build -t test-webapi:latest .
-
+        docker build -t vdt24-api:latest .
     - name: Push to DockerHub
       run: |
         docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN }}
-        docker tag test-webapi:latest ${{ secrets.DOCKERHUB_USERNAME }}/test-webapi:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/test-webapi:latest
+        docker tag vdt24-api:latest ${{ secrets.DOCKERHUB_USERNAME }}/vdt24-api:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/vdt24-api:latest
